@@ -13,8 +13,10 @@ const windValueTxt = document.querySelector('.wind-value-txt')
 const weatherSummaryImg = document.querySelector('.weather-summary-img')
 const currentDateTxt = document.querySelector('.current-date-txt')
 
-searchBtn.addEventListener('click' , () => {
-    if(cityInput.value.trim() != '') {
+const forecastItemsContainer = document.querySelector('.forecast-items-container')
+
+searchBtn.addEventListener('click', () => {
+    if (cityInput.value.trim() != '') {
         updateWeatherInfo(cityInput.value)
         cityInput.value = ''
         cityInput.blur()
@@ -29,8 +31,8 @@ cityInput.addEventListener('keydown', (event) => {
     }
 })
 
-async function getFetchData(endPoint, city) {
-    const apiUrl = `https://api.weatherapi.com/v1/${endPoint}?key=${apiKey}&q=${city}`
+async function getFetchData(endPoint, city, extraParams = '') {
+    const apiUrl = `https://api.weatherapi.com/v1/${endPoint}?key=${apiKey}&q=${city}${extraParams}`
 
     const response = await fetch(apiUrl)
 
@@ -60,7 +62,7 @@ function getCurrentDate() {
 
 async function updateWeatherInfo(city) {
     const weatherData = await getFetchData('current.json', city)
-    if(weatherData.error) {
+    if (weatherData.error) {
         showDisplaySection(notFoundSection)
         return
     }
@@ -69,11 +71,11 @@ async function updateWeatherInfo(city) {
 
     const {
         location: { name },
-        current: { 
-            temp_c, 
-            humidity, 
-            wind_kph, 
-            condition: { code, text}
+        current: {
+            temp_c,
+            humidity,
+            wind_kph,
+            condition: { code, text }
         }
 
     } = weatherData
@@ -87,12 +89,54 @@ async function updateWeatherInfo(city) {
     currentDateTxt.textContent = getCurrentDate()
     weatherSummaryImg.src = `assets/weather/${getWeatherIcon(code)}`
 
+    await updateForecastsInfo(city)
     showDisplaySection(weatherInfoSection)
+}
+
+async function updateForecastsInfo(city) {
+    const forecastsData = await getFetchData('forecast.json', city, '&days=7');
+
+    forecastItemsContainer.innerHTML = '';
+
+    forecastsData.forecast.forecastday.forEach((forecastDay, index) => {
+        //if (index == 0) return;
+
+        updateForecastsItems(forecastDay);
+    });
+}
+
+function updateForecastsItems(forecastDay) {
+    const {
+        date,
+        day: {
+            avgtemp_c,
+            condition: { code }
+        }
+    } = forecastDay;
+
+    const dateTaken = new Date(date)
+
+    const dateOption = {
+        day: '2-digit',
+        month: 'short'
+    }
+
+    const dateResult = dateTaken.toLocaleDateString('en-US', dateOption)
+
+    const forecastItem = `
+    <div class="forecast-item">
+       <h5 class="forecast-item-date regylar-txt">${dateResult}</h5>
+       <img src="assets/weather/${getWeatherIcon(code)}" class="forecast-item-img">
+       <h5 class="forecast-item-temp">${Math.round(avgtemp_c)} °C</h5>
+    </div>
+    `
+
+    forecastItemsContainer.insertAdjacentHTML('beforeend', forecastItem)
 }
 
 function showDisplaySection(section) {
     [weatherInfoSection, searchCitySection, notFoundSection]
-     .forEach(section => section.style.display = 'none')
+        .forEach(section => section.style.display = 'none')
 
-     section.style.display = 'flex'
+    section.style.display = 'flex'
 }
