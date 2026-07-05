@@ -1,0 +1,1 @@
+const API_KEY = "You put your weather api key over here";
