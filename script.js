@@ -15,6 +15,10 @@ const currentDateTxt = document.querySelector('.current-date-txt')
 
 const forecastItemsContainer = document.querySelector('.forecast-items-container')
 
+let currentWeather = null;
+let forecastDays = [];
+let selectedForecastIndex = 0;
+
 searchBtn.addEventListener('click', () => {
     if (cityInput.value.trim() != '') {
         updateWeatherInfo(cityInput.value)
@@ -61,51 +65,36 @@ function getCurrentDate() {
 }
 
 async function updateWeatherInfo(city) {
+
     const weatherData = await getFetchData('current.json', city)
-    if (weatherData.error) {
-        showDisplaySection(notFoundSection)
-        return
-    }
 
-    console.log(weatherData);
+    currentWeather = weatherData;
 
-    const {
-        location: { name },
-        current: {
-            temp_c,
-            humidity,
-            wind_kph,
-            condition: { code, text }
-        }
+    selectedForecastIndex = -1;
 
-    } = weatherData
-
-    countryTxt.textContent = name
-    tempTxt.textContent = Math.round(temp_c) + ' °C'
-    conditionTxt.textContent = text
-    humidityValueTxt.textContent = humidity + '%'
-    windValueTxt.textContent = wind_kph + ' KM/h'
-
-    currentDateTxt.textContent = getCurrentDate()
-    weatherSummaryImg.src = `assets/weather/${getWeatherIcon(code)}`
+    showCurrentWeather();
 
     await updateForecastsInfo(city)
+    
     showDisplaySection(weatherInfoSection)
 }
 
 async function updateForecastsInfo(city) {
+
     const forecastsData = await getFetchData('forecast.json', city, '&days=8');
+
+    forecastDays = forecastsData.forecast.forecastday;
 
     forecastItemsContainer.innerHTML = '';
 
     forecastsData.forecast.forecastday.forEach((forecastDay, index) => {
         if (index == 0) return;
 
-        updateForecastsItems(forecastDay);
+        updateForecastsItems(forecastDay, index);
     });
 }
 
-function updateForecastsItems(forecastDay) {
+function updateForecastsItems(forecastDay, index) {
     const {
         date,
         day: {
@@ -132,6 +121,67 @@ function updateForecastsItems(forecastDay) {
     `
 
     forecastItemsContainer.insertAdjacentHTML('beforeend', forecastItem)
+
+    const forecastElement = forecastItemsContainer.lastElementChild;
+
+    forecastElement.addEventListener("click", () => {
+        selectedForecastIndex = index;
+        showForecastDetails(index);
+    });
+
+}
+
+function showForecastDetails(index) {
+    const day = forecastDays[index];
+
+    tempTxt.textContent =
+        Math.round(day.day.avgtemp_c) + ' °C';
+
+    conditionTxt.textContent =
+        day.day.condition.text;
+
+    humidityValueTxt.textContent =
+        day.day.avghumidity + '%';
+
+    windValueTxt.textContent =
+        day.day.maxwind_kph + ' KM/h';
+
+    currentDateTxt.textContent =
+        new Date(day.date).toLocaleDateString(
+            'en-GB',
+            {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short'
+            });
+
+    weatherSummaryImg.src =
+        `assets/weather/${getWeatherIcon(day.day.condition.code)}`;
+}
+
+function showCurrentWeather() {
+
+    const {
+        location: { name },
+        current: {
+            temp_c,
+            humidity,
+            wind_kph,
+            condition: { code, text }
+        }
+    } = currentWeather;
+
+    countryTxt.textContent = name;
+
+    tempTxt.textContent = Math.round(temp_c) + ' °C';
+    conditionTxt.textContent = text;
+    humidityValueTxt.textContent = humidity + '%';
+    windValueTxt.textContent = wind_kph + ' KM/h';
+
+    currentDateTxt.textContent = getCurrentDate();
+
+    weatherSummaryImg.src =
+        `assets/weather/${getWeatherIcon(code)}`;
 }
 
 function showDisplaySection(section) {
@@ -140,3 +190,23 @@ function showDisplaySection(section) {
 
     section.style.display = 'flex'
 }
+
+document.addEventListener("keydown", (event) => {
+
+    if (event.key !== "ArrowLeft")
+        return;
+
+    if (selectedForecastIndex > 1) {
+
+        selectedForecastIndex--;
+        showForecastDetails(selectedForecastIndex);
+
+    }
+    else if (selectedForecastIndex === 1) {
+
+        selectedForecastIndex = -1;
+        showCurrentWeather();
+
+    }
+
+});

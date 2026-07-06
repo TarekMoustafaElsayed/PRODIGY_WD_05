@@ -38,7 +38,7 @@ body::before {
 
 .main-container {
     width: 300px;
-    height: 496px;
+    min-height: 540px;
     z-index: 1;
     background: linear-gradient(
         to top, #AC78EB 5%,
@@ -91,7 +91,7 @@ body::before {
 .weather-info {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 23px;
 }
 
 .location-date-container {
@@ -134,6 +134,12 @@ body::before {
 
 .condition-item span {
     font-size: 30px;
+}
+
+.forecast-title{
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: -5px;
 }
 
 .forecast-items-container {
