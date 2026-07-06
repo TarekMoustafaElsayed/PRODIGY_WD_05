@@ -108,7 +108,7 @@ Weather-App/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Weather-App.git
+git clone https://github.com/TarekMoustafaElsayed/Weather-App.git
 ```
 
 ---
