@@ -94,12 +94,12 @@ async function updateWeatherInfo(city) {
 }
 
 async function updateForecastsInfo(city) {
-    const forecastsData = await getFetchData('forecast.json', city, '&days=7');
+    const forecastsData = await getFetchData('forecast.json', city, '&days=8');
 
     forecastItemsContainer.innerHTML = '';
 
     forecastsData.forecast.forecastday.forEach((forecastDay, index) => {
-        //if (index == 0) return;
+        if (index == 0) return;
 
         updateForecastsItems(forecastDay);
     });
