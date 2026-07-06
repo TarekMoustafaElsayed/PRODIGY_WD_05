@@ -35,12 +35,12 @@ cityInput.addEventListener('keydown', (event) => {
     }
 })
 
-async function getFetchData(endPoint, city, extraParams = '') {
-    const apiUrl = `https://api.weatherapi.com/v1/${endPoint}?key=${apiKey}&q=${city}${extraParams}`
+async function getFetchData(endPoint, city) {
+    const apiUrl = `http://127.0.0.1:8000/weather/${endPoint}?city=${encodeURIComponent(city)}`;
 
-    const response = await fetch(apiUrl)
+    const response = await fetch(apiUrl);
 
-    return response.json()
+    return response.json();
 }
 
 function getWeatherIcon(code) {
@@ -66,7 +66,12 @@ function getCurrentDate() {
 
 async function updateWeatherInfo(city) {
 
-    const weatherData = await getFetchData('current.json', city)
+    const weatherData = await getFetchData('current', city);
+
+    if (weatherData.error) {
+        showDisplaySection(notFoundSection);
+        return;
+    }
 
     currentWeather = weatherData;
 
@@ -75,13 +80,13 @@ async function updateWeatherInfo(city) {
     showCurrentWeather();
 
     await updateForecastsInfo(city)
-    
+
     showDisplaySection(weatherInfoSection)
 }
 
 async function updateForecastsInfo(city) {
 
-    const forecastsData = await getFetchData('forecast.json', city, '&days=8');
+    const forecastsData = await getFetchData('forecast', city);
 
     forecastDays = forecastsData.forecast.forecastday;
 
@@ -114,7 +119,7 @@ function updateForecastsItems(forecastDay, index) {
 
     const forecastItem = `
     <div class="forecast-item">
-       <h5 class="forecast-item-date regylar-txt">${dateResult}</h5>
+       <h5 class="forecast-item-date regular-txt">${dateResult}</h5>
        <img src="assets/weather/${getWeatherIcon(code)}" class="forecast-item-img">
        <h5 class="forecast-item-temp">${Math.round(avgtemp_c)} °C</h5>
     </div>

@@ -173,6 +173,7 @@ body::before {
     padding: 10px;
     align-items: center;
     border-radius: 12px;
+    cursor: pointer;
     transition: 0.3s background;
 }
 
