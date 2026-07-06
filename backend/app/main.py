@@ -13,4 +13,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    return {
+        "status": "running",
+        "service": "Weather API Backend",
+        "version": "1.0.0"
+    }
+
+
 app.include_router(router)
