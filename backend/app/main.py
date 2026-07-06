@@ -18,8 +18,12 @@ def root():
     return {
         "status": "running",
         "service": "Weather API Backend",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "message": "Weather API is running!"
     }
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 app.include_router(router)
